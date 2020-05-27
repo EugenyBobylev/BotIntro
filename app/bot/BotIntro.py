@@ -43,7 +43,9 @@ def callback_query(query):
     else:
         (ok, date) = calendar_callback(bot, query)
         if ok:
-            bot.send_message(query.message.chat.id, f'Выбрана датA = {date}')
+            bot.edit_message_reply_markup(chat_id=query.message.chat.id, message_id=query.message.message_id)
+            bot.send_message(query.message.chat.id, f'Выбрана датa = {date}')
+
 
 
 @bot.message_handler(commands=['url'])
