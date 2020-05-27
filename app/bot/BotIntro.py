@@ -10,11 +10,6 @@ def start_message(message):
     bot.send_message(message.chat.id, 'Привет, ты написал мне /start')
 
 
-def create_callback_data(action, year, month, day):
-    """ Create the callback data associated to each button"""
-    return ";".join([action, str(year), str(month), str(day)])
-
-
 @bot.message_handler(commands='calendar')
 def get_calendar(message):
     keyboard = create_calendar()
@@ -45,15 +40,6 @@ def callback_query(query):
         if ok:
             bot.edit_message_reply_markup(chat_id=query.message.chat.id, message_id=query.message.message_id)
             bot.send_message(query.message.chat.id, f'Выбрана датa = {date}')
-
-
-
-@bot.message_handler(commands=['url'])
-def btn_test(message):
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    url_button = telebot.types.InlineKeyboardButton(text="Перейти на Яндекс", url="https://ya.ru")
-    keyboard.add(url_button)
-    bot.send_message(message.chat.id, 'Нажми кнопку получишь результат', reply_markup=keyboard)
 
 
 @bot.message_handler(content_types=['text'])
