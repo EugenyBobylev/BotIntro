@@ -1,9 +1,6 @@
 import app.bot.config
-import calendar
-import datetime
 import telebot
-
-from app.bot.TCalendar import create_calendar
+from app.bot.TCalendar import create_calendar, calendar_callback
 
 bot = telebot.TeleBot(app.bot.config.token)
 
@@ -11,11 +8,6 @@ bot = telebot.TeleBot(app.bot.config.token)
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, 'Привет, ты написал мне /start')
-
-
-@bot.message_handler(commands=['calendar1'])
-def get_calendar1(message):
-    bot.send_message(message.chat.id, 'Выберите', reply_markup=create_calendar())
 
 
 def create_callback_data(action, year, month, day):
@@ -27,97 +19,6 @@ def create_callback_data(action, year, month, day):
 def get_calendar(message):
     keyboard = create_calendar()
     bot.send_message(message.chat.id, 'Выберите дату', reply_markup=keyboard)
-
-
-def create_calendar(year=None, month=None):
-    now = datetime.date.today()
-    if year is None:
-        year = now.year
-    if month is None:
-        month = now.month
-
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    # top
-    keyboard.row(
-        telebot.types.InlineKeyboardButton(f'{calendar.month_name[month]} {year}',
-                                           callback_data='IGNORE-0-0-0')
-    )
-    keyboard.row(
-        telebot.types.InlineKeyboardButton('Пн', callback_data='MONDAY-0-0-0'),
-        telebot.types.InlineKeyboardButton('Вт', callback_data='TUESDAY-0-0-0'),
-        telebot.types.InlineKeyboardButton('Ср', callback_data='WEDNESDAY-0-0-0'),
-        telebot.types.InlineKeyboardButton('Чт', callback_data='THURSDAY-0-0-0'),
-        telebot.types.InlineKeyboardButton('Пт', callback_data='FRIDAY-0-0-0'),
-        telebot.types.InlineKeyboardButton('Сб', callback_data='SATURDAY-0-0-0'),
-        telebot.types.InlineKeyboardButton('Вс', callback_data='SUNDAY-0-0-0')
-    )
-    # middle
-    month_calendar = calendar.monthcalendar(year, month)
-    for week in month_calendar:
-        keyboard.row(
-            telebot.types.InlineKeyboardButton('-' if week[0] == 0 else str(week[0]),
-                                               callback_data=f'DAY-{year}-{month}-{week[0]}'),
-            telebot.types.InlineKeyboardButton('-' if week[1] == 0 else str(week[1]),
-                                               callback_data=f'DAY-{year}-{month}-{week[1]}'),
-            telebot.types.InlineKeyboardButton('-' if week[2] == 0 else str(week[2]),
-                                               callback_data=f'DAY-{year}-{month}-{week[2]}'),
-            telebot.types.InlineKeyboardButton('-' if week[3] == 0 else str(week[3]),
-                                               callback_data=f'DAY-{year}-{month}-{week[3]}'),
-            telebot.types.InlineKeyboardButton('-' if week[4] == 0 else str(week[4]),
-                                               callback_data=f'DAY-{year}-{month}-{week[4]}'),
-            telebot.types.InlineKeyboardButton('-' if week[5] == 0 else str(week[5]),
-                                               callback_data=f'DAY-{year}-{month}-{week[5]}'),
-            telebot.types.InlineKeyboardButton('-' if week[6] == 0 else str(week[6]),
-                                               callback_data=f'DAY-{year}-{month}-{week[6]}')
-        )
-    # bottom
-    keyboard.row(
-        telebot.types.InlineKeyboardButton('< Пред.', callback_data=f'PREV_MONTH-{year}-{month}-0'),
-        telebot.types.InlineKeyboardButton('След. >', callback_data=f'NEXT_MONTH-{year}-{month}-0')
-    )
-    return keyboard
-
-
-@bot.callback_query_handler(func=lambda call: True)
-def calendar_callback(query):
-    data: str = query.data
-    (action, syear, smonth, sday) = data.split('-')
-    year = int(syear)
-    month = int(smonth)
-    day = int(sday)
-    if action == 'DAY':
-        date1 = datetime.date(year, month, day)
-        bot.send_message(query.message.chat.id, f'Выбрана дата = {date1}')
-    elif action == 'PREV_MONTH':
-        if month == 1:
-            year = year -1
-            month = 12
-        else:
-            month = month - 1
-        bot.edit_message_text(
-            text='Выберите дату',
-            chat_id=query.message.chat.id,
-            message_id=query.message.message_id,
-            reply_markup=create_calendar(year, month)
-        )
-
-    elif action == 'NEXT_MONTH':
-        if month == 12:
-            year = year + 1
-            month = 1
-        else:
-            month = month + 1
-        bot.edit_message_text(
-            text='Выберите дату',
-            chat_id=query.message.chat.id,
-            message_id=query.message.message_id,
-            reply_markup=create_calendar(year, month)
-        )
-
-
-def to_date(data: str):
-    (action, year, month, day) = data.split('-')
-    return datetime.date(int(year), int(month), int(day))
 
 
 @bot.message_handler(commands=['gettasks'])
@@ -140,7 +41,9 @@ def callback_query(query):
         func = get_tasks_dict[data]
         func(query.message)
     else:
-        calendar_callback(query)
+        (ok, date) = calendar_callback(bot, query)
+        if ok:
+            bot.send_message(query.message.chat.id, f'Выбрана датA = {date}')
 
 
 @bot.message_handler(commands=['url'])
