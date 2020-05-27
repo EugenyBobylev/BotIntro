@@ -40,16 +40,16 @@ def create_calendar(year=None, month=None):
     # top
     keyboard.row(
         telebot.types.InlineKeyboardButton(f'{calendar.month_name[month]} {year}',
-                                           callback_data='calendar_ignore')
+                                           callback_data='IGNORE-0-0-0')
     )
     keyboard.row(
-        telebot.types.InlineKeyboardButton('Пн', callback_data='calendar_ignore_mo'),
-        telebot.types.InlineKeyboardButton('Вт', callback_data='calendar_ignore_tu'),
-        telebot.types.InlineKeyboardButton('Ср', callback_data='calendar_ignore_we'),
-        telebot.types.InlineKeyboardButton('Чт', callback_data='calendar_ignore_th'),
-        telebot.types.InlineKeyboardButton('Пт', callback_data='calendar_ignore_fr'),
-        telebot.types.InlineKeyboardButton('Сб', callback_data='calendar_ignore_sa'),
-        telebot.types.InlineKeyboardButton('Вс', callback_data='calendar_ignore_su')
+        telebot.types.InlineKeyboardButton('Пн', callback_data='MONDAY-0-0-0'),
+        telebot.types.InlineKeyboardButton('Вт', callback_data='TUESDAY-0-0-0'),
+        telebot.types.InlineKeyboardButton('Ср', callback_data='WEDNESDAY-0-0-0'),
+        telebot.types.InlineKeyboardButton('Чт', callback_data='THURSDAY-0-0-0'),
+        telebot.types.InlineKeyboardButton('Пт', callback_data='FRIDAY-0-0-0'),
+        telebot.types.InlineKeyboardButton('Сб', callback_data='SATURDAY-0-0-0'),
+        telebot.types.InlineKeyboardButton('Вс', callback_data='SUNDAY-0-0-0')
     )
     # middle
     month_calendar = calendar.monthcalendar(year, month)
@@ -81,13 +81,32 @@ def create_calendar(year=None, month=None):
 @bot.callback_query_handler(func=lambda call: True)
 def calendar_callback(query):
     data: str = query.data
-    if data.startswith('DAY'):
-        date1 = to_date(data)
+    (action, syear, smonth, sday) = data.split('-')
+    year = int(syear)
+    month = int(smonth)
+    day = int(sday)
+    if action == 'DAY':
+        date1 = datetime.date(year, month, day)
         bot.send_message(query.message.chat.id, f'Выбрана дата = {date1}')
-    elif data.startswith('PREV_MONTH'):
-        (action, syear, smonth, sday) = data.split('-')
-        year = int(syear) if smonth != '1' else int(syear)-1
-        month = int(smonth)-1 if smonth != '1' else 12
+    elif action == 'PREV_MONTH':
+        if month == 1:
+            year = year -1
+            month = 12
+        else:
+            month = month - 1
+        bot.edit_message_text(
+            text='Выберите дату',
+            chat_id=query.message.chat.id,
+            message_id=query.message.message_id,
+            reply_markup=create_calendar(year, month)
+        )
+
+    elif action == 'NEXT_MONTH':
+        if month == 12:
+            year = year + 1
+            month = 1
+        else:
+            month = month + 1
         bot.edit_message_text(
             text='Выберите дату',
             chat_id=query.message.chat.id,
