@@ -1,6 +1,6 @@
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
-import datetime
 import calendar
+import datetime
 
 
 def create_callback_data(action, year, month, day):
@@ -56,6 +56,7 @@ def create_calendar(year=None, month=None):
     keyboard.append(row)
 
     return InlineKeyboardMarkup(keyboard)
+
 
 
 def process_calendar_selection(bot, update):
