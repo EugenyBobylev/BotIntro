@@ -5,7 +5,6 @@ from app.bot.TCalendar import create_calendar, calendar_callback
 
 bot = telebot.TeleBot(app.bot.config.token)
 
-
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, 'Начинаем работу /start')
@@ -73,6 +72,7 @@ def show_tasks(message):
     keyboard.add(InlineKeyboardButton('Вернуться', callback_data='get_home'))
 
     bot.send_message(message.chat.id, 'Выберите', reply_markup=keyboard)
+    bot.edit_message_reply_markup(chat_id=message.chat.id, message_id=message.message_id)
 
 
 @bot.message_handler(func=lambda message: True)
