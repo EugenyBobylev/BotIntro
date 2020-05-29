@@ -23,7 +23,6 @@ def callback_query(query):
 
 @bot.message_handler(content_types=['text'])
 def send_text(message):
-    clear_messages(message.chat.id)
     message.text = message.text.lower()
     if message.text == 'text':
         bot.send_message(message.chat.id, 'Привет')
@@ -31,8 +30,6 @@ def send_text(message):
         bot.send_message(message.chat.id, 'Привет, мой создатель')
     elif message.text == 'пока':
         bot.send_message(message.chat.id, 'Прощай, создатель')
-    elif message.text == 'как дела старина':
-        bot.send_sticker(message.chat.id, 'CAADAgADZgkAAnlc4gmfCor5YbYYRAI')
     else:
         bot.delete_message(message.chat.id, message.message_id)
 
@@ -43,21 +40,15 @@ def get_home(message):
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
-@bot.message_handler(content_types=['sticker'])
+@bot.message_handler(func=lambda message: True)
 def add_new_task(message):
-    bot.reply_to(message, 'выполняется add_new_task')
+    show_new_task_menu(message.chat.id)
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
 @bot.message_handler(func=lambda message: True)
 def show_tasks(message):
-    keyboard = InlineKeyboardMarkup()
-
-    keyboard.add(InlineKeyboardButton('Все не завершенные', callback_data='get_all_tasks')),
-    keyboard.add(InlineKeyboardButton('Все на сегодня', callback_data='get_today_tasks')),
-    keyboard.add(InlineKeyboardButton('Все на завтра', callback_data='get_tomorrow_tasks'))
-    keyboard.add(InlineKeyboardButton('Вернуться', callback_data='get_home'))
-
-    bot.send_message(message.chat.id, 'Выберите', reply_markup=keyboard)
+    show_tasks_menu(message.chat.id)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
@@ -67,6 +58,22 @@ def show_home_menu(chat_id):
     keyboard.add(InlineKeyboardButton('Добавить задачу', callback_data='add_new_task'))
     keyboard.add(InlineKeyboardButton('Мои задачи', callback_data='show_tasks'))
     bot.send_message(chat_id, 'Выберите дальнейшее действие', reply_markup=keyboard)
+
+
+def show_tasks_menu(chat_id):
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton('Все не завершенные', callback_data='get_all_tasks'))
+    keyboard.add(InlineKeyboardButton('Все на сегодня', callback_data='get_today_tasks'))
+    keyboard.add(InlineKeyboardButton('Все на завтра', callback_data='get_tomorrow_tasks'))
+    keyboard.add(InlineKeyboardButton('Вернуться', callback_data='get_home'))
+    bot.send_message(chat_id, 'Выберите', reply_markup=keyboard)
+
+
+def show_new_task_menu(chat_id):
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton('Добавьте описание', callback_data='add_task_descr'))
+    keyboard.add(InlineKeyboardButton('Выберете дату', callback_data='add_task_date'))
+    bot.send_message(chat_id, 'Новая задача', reply_markup=keyboard)
 
 
 # *****************************************************************************
@@ -95,6 +102,16 @@ def get_tomorrow_tasks(message):
     bot.reply_to(message, 'выполняется get_tomorrow_tasks')
 
 
+@bot.message_handler(func=lambda message: True)
+def add_task_descr(message):
+    bot.reply_to(message, 'выполняется add_task_descr')
+
+
+@bot.message_handler(func=lambda message: True)
+def add_task_date(message):
+    bot.reply_to(message, 'выполняется add_task_date')
+
+
 def pop(chat_id):
     message_id = stack.pop(chat_id)
     return message_id
@@ -107,6 +124,8 @@ if __name__ == '__main__':
         'show_tasks': show_tasks,
         'get_all_tasks': get_all_tasks,
         'get_today_tasks': get_today_tasks,
-        'get_tomorrow_tasks': get_tomorrow_tasks
+        'get_tomorrow_tasks': get_tomorrow_tasks,
+        'add_task_descr': add_task_descr,
+        'add_task_date': add_task_date
     }
     bot.polling()
