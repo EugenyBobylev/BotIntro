@@ -5,6 +5,7 @@ from app.bot.TCalendar import create_calendar, calendar_callback
 
 bot = telebot.TeleBot(app.bot.config.token)
 
+
 @bot.message_handler(commands=['start'])
 def start_message(message):
     bot.send_message(message.chat.id, 'Начинаем работу /start')
@@ -36,14 +37,17 @@ def callback_query(query):
 @bot.message_handler(content_types=['text'])
 def send_text(message):
     message.text = message.text.lower()
-    if message.text == 'привет':
+    if message.text == 'text':
+        bot.send_message(message.chat.id, 'Привет')
+        bot.delete_message(message.chat.id, message.message_id + 1)
+    elif message.text == 'привет':
         bot.send_message(message.chat.id, 'Привет, мой создатель')
     elif message.text == 'пока':
         bot.send_message(message.chat.id, 'Прощай, создатель')
     elif message.text == 'как дела старина':
         bot.send_sticker(message.chat.id, 'CAADAgADZgkAAnlc4gmfCor5YbYYRAI')
     else:
-        bot.send_message(message.chat.id, message.text)
+        bot.delete_message(message.chat.id, message.message_id)
 
 
 @bot.message_handler(content_types=['sticker'])
@@ -88,6 +92,11 @@ def get_today_tasks(message):
 @bot.message_handler(func=lambda message: True)
 def get_tomorrow_tasks(message):
     bot.reply_to(message, 'выполняется get_tomorrow_tasks')
+
+
+@bot.message_handler(func=lambda message: True)
+def get_home(message):
+    bot.reply_to(message, 'выполняется get_home')
 
 
 if __name__ == "__main__":
