@@ -1,15 +1,15 @@
 import pytest
-from app.bot.TStack import TStack
+from app.bot.bot_stack import BotStack
 
 
 def test_create_stack():
-    stack = TStack()
+    stack = BotStack()
     assert stack is not None
     assert stack.all_count() == 0
 
 
 def test_push():
-    stack = TStack()
+    stack = BotStack()
     stack.push('bobylev', 'message_01')
     stack.push('user2', 'message_02')
     assert stack.all_count() == 2
@@ -30,7 +30,7 @@ def test_pop_empty_list():
 
 
 def test_pop():
-    stack = TStack()
+    stack = BotStack()
     stack.push('user1', 'message_01')
     stack.push('user2', 'message_02')
     stack.push('user2', 'message_03')
@@ -47,7 +47,7 @@ def test_pop():
 
 
 def test_count():
-    stack = TStack()
+    stack = BotStack()
     stack.push('user1', 'message_01')
     stack.push('user1', 'message_02')
 

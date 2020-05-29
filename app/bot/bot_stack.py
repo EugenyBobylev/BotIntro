@@ -1,7 +1,7 @@
 from typing import Dict
 
 
-class TStack:
+class BotStack:
 
     def __init__(self):
         self.__stack__ = {}
