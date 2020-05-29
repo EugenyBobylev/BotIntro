@@ -21,7 +21,7 @@ def callback_query(query):
         func(query.message)
 
 
-@bot.message_handler(content_types=['text'])
+# @bot.message_handler(content_types=['text'])
 def send_text(message):
     message.text = message.text.lower()
     if message.text == 'text':
@@ -50,6 +50,35 @@ def add_new_task(message):
 def show_tasks(message):
     show_tasks_menu(message.chat.id)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+
+
+@bot.message_handler(func=lambda message: True)
+def get_all_tasks(message):
+    bot.reply_to(message, 'выполняется get_all_tasks')
+
+
+@bot.message_handler(func=lambda message: True)
+def get_today_tasks(message):
+    bot.reply_to(message, 'выполняется get_today_tasks')
+
+
+@bot.message_handler(func=lambda message: True)
+def get_tomorrow_tasks(message):
+    bot.reply_to(message, 'выполняется get_tomorrow_tasks')
+
+
+@bot.message_handler(func=lambda message: True)
+def add_task_descr(message):
+    bot.send_message(message.chat.id,'Описание:')
+
+
+@bot.message_handler(func=add_task_descr)
+def set_task_descr(message):
+    bot.send_message(message.chat.id, message.text)
+
+@bot.message_handler(func=lambda message: True)
+def add_task_date(message):
+    bot.reply_to(message, 'выполняется add_task_date')
 
 
 # **************** menu ********************************************************
@@ -85,31 +114,6 @@ def clear_messages(chat_id):
 
 def push(message):
     stack.push(message.chat.id, message.message_id)
-
-
-@bot.message_handler(func=lambda message: True)
-def get_all_tasks(message):
-    bot.reply_to(message, 'выполняется get_all_tasks')
-
-
-@bot.message_handler(func=lambda message: True)
-def get_today_tasks(message):
-    bot.reply_to(message, 'выполняется get_today_tasks')
-
-
-@bot.message_handler(func=lambda message: True)
-def get_tomorrow_tasks(message):
-    bot.reply_to(message, 'выполняется get_tomorrow_tasks')
-
-
-@bot.message_handler(func=lambda message: True)
-def add_task_descr(message):
-    bot.reply_to(message, 'выполняется add_task_descr')
-
-
-@bot.message_handler(func=lambda message: True)
-def add_task_date(message):
-    bot.reply_to(message, 'выполняется add_task_date')
 
 
 def pop(chat_id):
