@@ -58,7 +58,16 @@ def add_new_task(message):
 
 @bot.message_handler(func=lambda message: True)
 def show_tasks(message):
-    bot.reply_to(message, 'выполняется show_tasks')
+    keyboard = InlineKeyboardMarkup()
+
+    keyboard.add(InlineKeyboardButton('Все не завершенные', callback_data='get_all_tasks')),
+    keyboard.add(InlineKeyboardButton('Все на сегодня', callback_data='get_today_tasks')),
+    keyboard.add(InlineKeyboardButton('Все на завтра', callback_data='get_tomorrow_tasks'))
+    keyboard.add(InlineKeyboardButton('Вернуться', callback_data='get_home'))
+
+    bot.send_message(message.chat.id, 'Выберите', reply_markup=keyboard)
+    bot.edit_message_reply_markup(chat_id=message.chat.id, message_id=message.message_id)
+
 
 
 def push(message):
