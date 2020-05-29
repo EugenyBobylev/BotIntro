@@ -8,12 +8,9 @@ stack = BotStack()
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    msg = bot.send_message(message.chat.id, 'Начинаем работу /start')
+    msg = bot.send_message(message.chat.id, 'Начинаем работу')
     push(msg)
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton('Добавить задачу', callback_data='add_new_task'))
-    keyboard.add(InlineKeyboardButton('Мои задачи', callback_data='show_tasks'))
-    bot.send_message(message.chat.id, 'Выберите дальнейшее действие', reply_markup=keyboard)
+    show_home_menu(message.chat.id)
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -40,15 +37,10 @@ def send_text(message):
         bot.delete_message(message.chat.id, message.message_id)
 
 
-def clear_messages(chat_id):
-    while stack.count(chat_id) > 0:
-        msg_id = pop(chat_id)
-        bot.delete_message(chat_id, msg_id)
-
-
 @bot.message_handler(func=lambda message: True)
 def get_home(message):
-    bot.reply_to(message, 'выполняется get_home')
+    show_home_menu(message.chat.id)
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
 @bot.message_handler(content_types=['sticker'])
@@ -66,8 +58,22 @@ def show_tasks(message):
     keyboard.add(InlineKeyboardButton('Вернуться', callback_data='get_home'))
 
     bot.send_message(message.chat.id, 'Выберите', reply_markup=keyboard)
-    bot.edit_message_reply_markup(chat_id=message.chat.id, message_id=message.message_id)
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
+
+# **************** menu ********************************************************
+def show_home_menu(chat_id):
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton('Добавить задачу', callback_data='add_new_task'))
+    keyboard.add(InlineKeyboardButton('Мои задачи', callback_data='show_tasks'))
+    bot.send_message(chat_id, 'Выберите дальнейшее действие', reply_markup=keyboard)
+
+
+# *****************************************************************************
+def clear_messages(chat_id):
+    while stack.count(chat_id) > 0:
+        msg_id = pop(chat_id)
+        bot.delete_message(chat_id, msg_id)
 
 
 def push(message):
