@@ -1,5 +1,8 @@
 import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+
+from app.bot import chatstate
+from app.bot.TCalendar import create_calendar, calendar_callback
 from app.bot.bot_stack import BotStack
 
 bot = telebot.TeleBot('1019358164:AAFGDWu1zn-nJyDKlKEFzFcuWBgYP-f30-Y')
@@ -13,12 +16,23 @@ def start_message(message):
     show_home_menu(message.chat.id)
 
 
+@bot.message_handler(commands=['calendar'])
+def show_calendar(message):
+    keyboard = create_calendar()
+    bot.send_message(message.chat.id, 'Выберите дату', reply_markup=keyboard)
+
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(query):
     data = query.data
     if data in get_tasks_dict:
         func = get_tasks_dict[data]
         func(query.message)
+    else:
+        (ok, date) = calendar_callback(bot, query)
+        if ok:
+            bot.edit_message_reply_markup(chat_id=query.message.chat.id, message_id=query.message.message_id)
+            bot.send_message(query.message.chat.id, f'Выбрана датa = {date}')
 
 
 # @bot.message_handler(content_types=['text'])
@@ -34,49 +48,59 @@ def send_text(message):
         bot.delete_message(message.chat.id, message.message_id)
 
 
-@bot.message_handler(func=lambda message: True)
+# @bot.message_handler(func=lambda message: True)
 def get_home(message):
     show_home_menu(message.chat.id)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
-@bot.message_handler(func=lambda message: True)
+# @bot.message_handler(func=lambda message: True)
 def add_new_task(message):
     show_new_task_menu(message.chat.id)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
-@bot.message_handler(func=lambda message: True)
+# @bot.message_handler(func=lambda message: True)
 def show_tasks(message):
     show_tasks_menu(message.chat.id)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
-@bot.message_handler(func=lambda message: True)
+# @bot.message_handler(func=lambda message: True)
 def get_all_tasks(message):
     bot.reply_to(message, 'выполняется get_all_tasks')
 
 
-@bot.message_handler(func=lambda message: True)
+# @bot.message_handler(func=lambda message: True)
 def get_today_tasks(message):
     bot.reply_to(message, 'выполняется get_today_tasks')
 
 
-@bot.message_handler(func=lambda message: True)
+# @bot.message_handler(func=lambda message: True)
 def get_tomorrow_tasks(message):
     bot.reply_to(message, 'выполняется get_tomorrow_tasks')
 
 
-@bot.message_handler(func=lambda message: True)
+# @bot.message_handler(func=lambda message: True)
 def add_task_descr(message):
-    bot.send_message(message.chat.id,'Описание:')
+    chatstate.set_chat_state(message.chat.id, 'add_task_descr')
+    bot.send_message(message.chat.id, 'Описание:')
 
 
-@bot.message_handler(func=add_task_descr)
+@bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_descr')
 def set_task_descr(message):
-    bot.send_message(message.chat.id, message.text)
+    chatstate.set_chat_state(message.chat.id, 'set_task_descr')
+    bot.send_message(message.chat.id, f'Descr = "{message.text}"')
 
-@bot.message_handler(func=lambda message: True)
+
+@bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'set_task_descr')
+def ask_task_date(message):
+    bot.reply_to(message, 'выполняется add_task_date')
+    # keyboard = create_calendar()
+    # bot.send_message(message.chat.id, 'Введите срок выполнения задачи', reply_markup=keyboard)
+
+
+# @bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'set_task_descr')
 def add_task_date(message):
     bot.reply_to(message, 'выполняется add_task_date')
 
@@ -132,4 +156,5 @@ if __name__ == '__main__':
         'add_task_descr': add_task_descr,
         'add_task_date': add_task_date
     }
+
     bot.polling()
