@@ -28,7 +28,7 @@ def callback_query(query):
     if data in get_tasks_dict:
         func = get_tasks_dict[data]
         func(query.message)
-    else:
+    elif chatstate.get_chat_state(query.message.chat.id) == 'ask_task_date':
         (ok, date) = calendar_callback(bot, query)
         if ok:
             bot.edit_message_reply_markup(chat_id=query.message.chat.id, message_id=query.message.message_id)
@@ -89,18 +89,17 @@ def add_task_descr(message):
 
 @bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_descr')
 def set_task_descr(message):
-    chatstate.set_chat_state(message.chat.id, 'set_task_descr')
-    bot.send_message(message.chat.id, f'Descr = "{message.text}"')
+    msg = bot.send_message(message.chat.id, f'Descr = "{message.text}"')
+    ask_task_date(msg)
+
+
+def ask_task_date(message):
+    chatstate.set_chat_state(message.chat.id, 'ask_task_date')
+    keyboard = create_calendar()
+    bot.send_message(message.chat.id, 'Введите срок выполнения задачи', reply_markup=keyboard)
 
 
 @bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'set_task_descr')
-def ask_task_date(message):
-    bot.reply_to(message, 'выполняется add_task_date')
-    # keyboard = create_calendar()
-    # bot.send_message(message.chat.id, 'Введите срок выполнения задачи', reply_markup=keyboard)
-
-
-# @bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'set_task_descr')
 def add_task_date(message):
     bot.reply_to(message, 'выполняется add_task_date')
 
