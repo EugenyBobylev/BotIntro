@@ -59,7 +59,7 @@ def get_home(message):
 def add_new_task(message):
     data = {}
     add_task_descr(message)
-    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    clear_messages(message.chat.id)
 
 
 def add_task_descr(message):
@@ -139,7 +139,8 @@ def show_home_menu(chat_id):
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton('Добавить задачу', callback_data='add_new_task'))
     keyboard.add(InlineKeyboardButton('Мои задачи', callback_data='show_tasks'))
-    bot.send_message(chat_id, 'Выберите дальнейшее действие', reply_markup=keyboard)
+    msg = bot.send_message(chat_id, 'Выберите дальнейшее действие', reply_markup=keyboard)
+    push(msg)
 
 
 def show_tasks_menu(chat_id):
