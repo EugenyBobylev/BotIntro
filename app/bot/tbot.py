@@ -19,21 +19,26 @@ def start_message(message):
 @bot.message_handler(commands=['calendar'])
 def show_calendar(message):
     keyboard = create_calendar()
-    bot.send_message(message.chat.id, 'Выберите дату', reply_markup=keyboard)
+    msg = bot.send_message(message.chat.id, 'Выберите дату', reply_markup=keyboard)
+    push(msg)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_query(query):
-    data = query.data
-    if data in get_tasks_dict:
-        func = get_tasks_dict[data]
+    qdata = query.data
+    if qdata in get_tasks_dict:
+        func = get_tasks_dict[qdata]
         func(query.message)
     elif chatstate.get_chat_state(query.message.chat.id) == 'add_task_date':
         (ok, date) = calendar_callback(bot, query)
         if ok:
-            bot.edit_message_reply_markup(chat_id=query.message.chat.id, message_id=query.message.message_id)
+            #bot.edit_message_reply_markup(chat_id=query.message.chat.id, message_id=query.message.message_id)
+            pop(query.message.chat.id)
+            pop(query.message.chat.id)
             data["срок"] = date
-            bot.send_message(query.message.chat.id, f'Срок = {data["срок"]}')
+            msg = bot.send_message(query.message.chat.id, f'Срок = {data["срок"]}')
+            push(msg)
+            confirm_task(msg.chat.id)
 
 
 # @bot.message_handler(content_types=['text'])
@@ -51,6 +56,7 @@ def send_text(message):
 
 # @bot.message_handler(func=lambda message: True)
 def get_home(message):
+    cnt = stack.all_count()
     clear_messages(message.chat.id)
     show_home_menu(message.chat.id)
 
@@ -63,6 +69,7 @@ def add_new_task(message):
 
 
 def add_task_descr(message):
+    pop(message.chat.id)
     chatstate.set_chat_state(message.chat.id, 'add_task_descr')
     msg = bot.send_message(message.chat.id, 'Введите описание задачи:')
     push(msg)
@@ -92,10 +99,9 @@ def set_task_date(message):
     push(message)
     pop(message.chat.id)
     pop(message.chat.id)
-    # clear_messages(message.chat.id)
     msg = bot.send_message(message.chat.id, f'Срок = {data["срок"]}')
     push(msg)
-    confirm_task(message.chat.id)
+    confirm_task(msg.chat.id)
 
 
 def confirm_task(chat_id):
@@ -124,8 +130,8 @@ def save_task(message):
 # *********************************************************************************
 # @bot.message_handler(func=lambda message: True)
 def show_tasks(message):
+    clear_messages(message.chat.id)
     show_tasks_menu(message.chat.id)
-    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
 # @bot.message_handler(func=lambda message: True)
@@ -158,7 +164,8 @@ def show_tasks_menu(chat_id):
     keyboard.add(InlineKeyboardButton('Все на сегодня', callback_data='get_today_tasks'))
     keyboard.add(InlineKeyboardButton('Все на завтра', callback_data='get_tomorrow_tasks'))
     keyboard.add(InlineKeyboardButton('Вернуться', callback_data='get_home'))
-    bot.send_message(chat_id, 'Выберите', reply_markup=keyboard)
+    msg = bot.send_message(chat_id, 'Выберите', reply_markup=keyboard)
+    push(msg)
 
 
 # *****************************************************************************
@@ -174,7 +181,8 @@ def push(message):
 
 def pop(chat_id):
     msg_id = stack.pop(chat_id)
-    bot.delete_message(chat_id, msg_id)
+    if msg_id is not None:
+        bot.delete_message(chat_id, msg_id)
 
 
 if __name__ == '__main__':
