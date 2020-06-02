@@ -57,7 +57,6 @@ def get_home(message):
 
 # ********************** Новая задача **********************************************************************************
 def add_new_task(message):
-    # show_new_task_menu(message.chat.id)
     data = {}
     add_task_descr(message)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
@@ -87,6 +86,8 @@ def add_task_date(message):
 @bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_date')
 def set_task_date(message):
     data["срок"] = date_from_str(message.text)
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id-1)
+    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     bot.send_message(message.chat.id, f'Срок = {data["срок"]}')
     confirm_task(message.chat.id)
 
@@ -98,7 +99,7 @@ def confirm_task(chat_id):
         InlineKeyboardButton('Сохранить', callback_data='save_task'),
         InlineKeyboardButton('Отмена', callback_data='get_home')
     )
-    bot.send_message(chat_id, f'{data}', reply_markup=keyboard)
+    bot.send_message(chat_id, f'Выберите действие', reply_markup=keyboard)
 
 
 def save_task(message):
@@ -148,13 +149,6 @@ def show_tasks_menu(chat_id):
     keyboard.add(InlineKeyboardButton('Все на завтра', callback_data='get_tomorrow_tasks'))
     keyboard.add(InlineKeyboardButton('Вернуться', callback_data='get_home'))
     bot.send_message(chat_id, 'Выберите', reply_markup=keyboard)
-
-
-def show_new_task_menu(chat_id):
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton('Добавьте описание', callback_data='add_task_descr'))
-    keyboard.add(InlineKeyboardButton('Выберете дату', callback_data='add_task_date'))
-    bot.send_message(chat_id, 'Новая задача', reply_markup=keyboard)
 
 
 # *****************************************************************************
