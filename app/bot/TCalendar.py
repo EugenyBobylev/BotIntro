@@ -86,7 +86,7 @@ def date_from_str(strdate: str):
     if strdate.isdigit():
         days = datetime.timedelta(days=int(strdate))
         date = date + days
-    elif strdate[0] == '-' and strdate[1:].isdigit():
+    elif strdate[0] in '-+' and strdate[1:].isdigit():
         days = datetime.timedelta(days=int(strdate))
         date = date + days
     else:
