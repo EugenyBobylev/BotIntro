@@ -115,6 +115,7 @@ def confirm_task(chat_id):
 
 def save_task(message):
     task = TodoTask.create(data)
+    print(task)
     clear_messages(message.chat.id)
     keyboard = InlineKeyboardMarkup()
     keyboard.row(
