@@ -79,3 +79,16 @@ def calendar_callback(bot, query):
             reply_markup=create_calendar(year, month)
         )
     return ret_data
+
+
+def date_from_str(strdate: str):
+    date = datetime.date.today()
+    if strdate.isdigit():
+        days = datetime.timedelta(days=int(strdate))
+        date = date + days
+    elif strdate[0] == '-' and strdate[1:].isdigit():
+        days = datetime.timedelta(days=int(strdate))
+        date = date + days
+    else:
+        date = (datetime.datetime.strptime(strdate, '%d.%m.%Y')).date()
+    return date

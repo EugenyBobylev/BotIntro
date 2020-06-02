@@ -3,3 +3,25 @@ username:	bobylev_bot
 
 It is the example of telegram bot.
 This bot presents a task list application.
+
+/start
+  |
+  |
+  +-- [new task]
+  |      |
+  |      +-- add descr -+--- add date
+  |                     |
+  |                     +--[datepicker]
+  |
+  +-- [my tasks]
+          |
+          +--[all tasks]
+          |
+          |
+          +--[today tasks]
+          |
+          |
+          +--[tomorrow tasks]
+          |
+          |
+          +--[home]

@@ -2,7 +2,7 @@ import telebot
 from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
 
 from app.bot import chatstate
-from app.bot.TCalendar import create_calendar, calendar_callback
+from app.bot.TCalendar import create_calendar, calendar_callback, date_from_str
 from app.bot.bot_stack import BotStack
 
 bot = telebot.TeleBot('1019358164:AAFGDWu1zn-nJyDKlKEFzFcuWBgYP-f30-Y')
@@ -11,8 +11,6 @@ stack = BotStack()
 
 @bot.message_handler(commands=['start'])
 def start_message(message):
-    msg = bot.send_message(message.chat.id, 'Начинаем работу')
-    push(msg)
     show_home_menu(message.chat.id)
 
 
@@ -28,7 +26,7 @@ def callback_query(query):
     if data in get_tasks_dict:
         func = get_tasks_dict[data]
         func(query.message)
-    elif chatstate.get_chat_state(query.message.chat.id) == 'ask_task_date':
+    elif chatstate.get_chat_state(query.message.chat.id) == 'add_task_date':
         (ok, date) = calendar_callback(bot, query)
         if ok:
             bot.edit_message_reply_markup(chat_id=query.message.chat.id, message_id=query.message.message_id)
@@ -54,12 +52,38 @@ def get_home(message):
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
-# @bot.message_handler(func=lambda message: True)
+# ********************** Новая задача **********************************************************************************
 def add_new_task(message):
-    show_new_task_menu(message.chat.id)
+    # show_new_task_menu(message.chat.id)
+    add_task_descr(message)
     bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
+def add_task_descr(message):
+    chatstate.set_chat_state(message.chat.id, 'add_task_descr')
+    bot.send_message(message.chat.id, 'Введите описание задачи:')
+
+
+@bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_descr')
+def set_task_descr(message):
+    msg = bot.send_message(message.chat.id, f'Descr = "{message.text}"')
+    add_task_date(msg)
+
+
+def add_task_date(message):
+    chatstate.set_chat_state(message.chat.id, 'add_task_date')
+    keyboard = InlineKeyboardMarkup()
+    keyboard.add(InlineKeyboardButton('Выбрать дату', callback_data='show_calendar'))
+    bot.send_message(message.chat.id, 'Введите срок выполнения задачи', reply_markup=keyboard)
+
+
+@bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_date')
+def set_task_date(message):
+    date = date_from_str(message.text)
+    bot.send_message(message.chat.id, f'Выбрана датa = {date}')
+
+
+# *********************************************************************************
 # @bot.message_handler(func=lambda message: True)
 def show_tasks(message):
     show_tasks_menu(message.chat.id)
@@ -79,29 +103,6 @@ def get_today_tasks(message):
 # @bot.message_handler(func=lambda message: True)
 def get_tomorrow_tasks(message):
     bot.reply_to(message, 'выполняется get_tomorrow_tasks')
-
-
-# @bot.message_handler(func=lambda message: True)
-def add_task_descr(message):
-    chatstate.set_chat_state(message.chat.id, 'add_task_descr')
-    bot.send_message(message.chat.id, 'Описание:')
-
-
-@bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_descr')
-def set_task_descr(message):
-    msg = bot.send_message(message.chat.id, f'Descr = "{message.text}"')
-    ask_task_date(msg)
-
-
-def ask_task_date(message):
-    chatstate.set_chat_state(message.chat.id, 'ask_task_date')
-    keyboard = create_calendar()
-    bot.send_message(message.chat.id, 'Введите срок выполнения задачи', reply_markup=keyboard)
-
-
-@bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'set_task_descr')
-def add_task_date(message):
-    bot.reply_to(message, 'выполняется add_task_date')
 
 
 # **************** menu ********************************************************
@@ -148,6 +149,7 @@ if __name__ == '__main__':
     get_tasks_dict = {
         'get_home': get_home,
         'add_new_task': add_new_task,
+        'show_calendar': show_calendar,
         'show_tasks': show_tasks,
         'get_all_tasks': get_all_tasks,
         'get_today_tasks': get_today_tasks,
