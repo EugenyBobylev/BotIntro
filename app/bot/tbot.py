@@ -58,20 +58,21 @@ def get_home(message):
 # ********************** Новая задача **********************************************************************************
 def add_new_task(message):
     data = {}
-    add_task_descr(message)
     clear_messages(message.chat.id)
+    add_task_descr(message)
 
 
 def add_task_descr(message):
     chatstate.set_chat_state(message.chat.id, 'add_task_descr')
-    bot.send_message(message.chat.id, 'Введите описание задачи:')
+    msg = bot.send_message(message.chat.id, 'Введите описание задачи:')
+    push(msg)
 
 
 @bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_descr')
 def set_task_descr(message):
     data["задача"] = message.text
-    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id-1)
-    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    push(message)  # ответ пользователя в стек
+    clear_messages(message.chat.id)
     msg = bot.send_message(message.chat.id, f'Задача = "{data["задача"]}"')
     add_task_date(msg)
 
