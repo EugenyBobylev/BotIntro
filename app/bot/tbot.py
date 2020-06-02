@@ -41,7 +41,6 @@ def callback_query(query):
             confirm_task(msg.chat.id)
 
 
-# @bot.message_handler(content_types=['text'])
 def send_text(message):
     message.text = message.text.lower()
     if message.text == 'text':
@@ -54,7 +53,6 @@ def send_text(message):
         bot.delete_message(message.chat.id, message.message_id)
 
 
-# @bot.message_handler(func=lambda message: True)
 def get_home(message):
     cnt = stack.all_count()
     clear_messages(message.chat.id)
@@ -128,25 +126,24 @@ def save_task(message):
 
 
 # *********************************************************************************
-# @bot.message_handler(func=lambda message: True)
 def show_tasks(message):
     clear_messages(message.chat.id)
     show_tasks_menu(message.chat.id)
 
 
-# @bot.message_handler(func=lambda message: True)
 def get_all_tasks(message):
-    bot.reply_to(message, 'выполняется get_all_tasks')
+    msg = bot.reply_to(message, 'выполняется get_all_tasks')
+    push(msg)
 
 
-# @bot.message_handler(func=lambda message: True)
 def get_today_tasks(message):
-    bot.reply_to(message, 'выполняется get_today_tasks')
+    msg = bot.reply_to(message, 'выполняется get_today_tasks')
+    push(msg)
 
 
-# @bot.message_handler(func=lambda message: True)
 def get_tomorrow_tasks(message):
-    bot.reply_to(message, 'выполняется get_tomorrow_tasks')
+    msg = bot.reply_to(message, 'выполняется get_tomorrow_tasks')
+    push(msg)
 
 
 # **************** menu ********************************************************
