@@ -126,7 +126,7 @@ def save_task(message):
     push(msg)
 
 
-# *********************************************************************************
+# *******************************my tasks **************************************************
 def show_tasks(message):
     clear_messages(message.chat.id)
     show_tasks_menu(message.chat.id)
@@ -166,7 +166,7 @@ def show_tasks_menu(chat_id):
     push(msg)
 
 
-# *****************************************************************************
+# ************************** stack methods ***************************************************
 def clear_messages(chat_id):
     while stack.count(chat_id) > 0:
         pop(chat_id)
