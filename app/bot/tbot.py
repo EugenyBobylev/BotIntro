@@ -81,14 +81,17 @@ def add_task_date(message):
     chatstate.set_chat_state(message.chat.id, 'add_task_date')
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton('Календарь', callback_data='show_calendar'))
-    bot.send_message(message.chat.id, 'Введите срок выполнения задачи', reply_markup=keyboard)
+    msg = bot.send_message(message.chat.id, 'Введите срок выполнения задачи', reply_markup=keyboard)
+    push(msg)
 
 
 @bot.message_handler(func=lambda message: chatstate.get_chat_state(message.chat.id) == 'add_task_date')
 def set_task_date(message):
     data["срок"] = date_from_str(message.text)
-    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id-1)
-    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    push(message)
+    clear_messages(message.chat.id)
+    # bot.delete_message(chat_id=message.chat.id, message_id=message.message_id-1)
+    # bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     bot.send_message(message.chat.id, f'Срок = {data["срок"]}')
     confirm_task(message.chat.id)
 
