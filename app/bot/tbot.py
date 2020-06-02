@@ -51,8 +51,8 @@ def send_text(message):
 
 # @bot.message_handler(func=lambda message: True)
 def get_home(message):
+    clear_messages(message.chat.id)
     show_home_menu(message.chat.id)
-    bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
 # ********************** Новая задача **********************************************************************************
@@ -74,6 +74,7 @@ def set_task_descr(message):
     push(message)  # ответ пользователя в стек
     clear_messages(message.chat.id)
     msg = bot.send_message(message.chat.id, f'Задача = "{data["задача"]}"')
+    push(msg)
     add_task_date(msg)
 
 
@@ -89,10 +90,11 @@ def add_task_date(message):
 def set_task_date(message):
     data["срок"] = date_from_str(message.text)
     push(message)
-    clear_messages(message.chat.id)
-    # bot.delete_message(chat_id=message.chat.id, message_id=message.message_id-1)
-    # bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-    bot.send_message(message.chat.id, f'Срок = {data["срок"]}')
+    pop(message.chat.id)
+    pop(message.chat.id)
+    # clear_messages(message.chat.id)
+    msg = bot.send_message(message.chat.id, f'Срок = {data["срок"]}')
+    push(msg)
     confirm_task(message.chat.id)
 
 
@@ -103,17 +105,20 @@ def confirm_task(chat_id):
         InlineKeyboardButton('Сохранить', callback_data='save_task'),
         InlineKeyboardButton('Отмена', callback_data='get_home')
     )
-    bot.send_message(chat_id, f'Выберите действие', reply_markup=keyboard)
+    msg = bot.send_message(chat_id, f'Выберите действие', reply_markup=keyboard)
+    push(msg)
 
 
 def save_task(message):
     task = TodoTask.create(data)
+    clear_messages(message.chat.id)
     keyboard = InlineKeyboardMarkup()
     keyboard.row(
         InlineKeyboardButton('В начало', callback_data='get_home'),
         InlineKeyboardButton('Добавить задачу', callback_data='add_new_task')
     )
-    bot.send_message(message.chat.id, "Задача сохранена", reply_markup=keyboard)
+    msg = bot.send_message(message.chat.id, "Задача сохранена", reply_markup=keyboard)
+    push(msg)
 
 
 # *********************************************************************************
@@ -159,8 +164,8 @@ def show_tasks_menu(chat_id):
 # *****************************************************************************
 def clear_messages(chat_id):
     while stack.count(chat_id) > 0:
-        msg_id = pop(chat_id)
-        bot.delete_message(chat_id, msg_id)
+        pop(chat_id)
+        # bot.delete_message(chat_id, msg_id)
 
 
 def push(message):
@@ -168,8 +173,8 @@ def push(message):
 
 
 def pop(chat_id):
-    message_id = stack.pop(chat_id)
-    return message_id
+    msg_id = stack.pop(chat_id)
+    bot.delete_message(chat_id, msg_id)
 
 
 if __name__ == '__main__':
